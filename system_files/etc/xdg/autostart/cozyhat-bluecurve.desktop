@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Bluecurve user setup
+Exec=/usr/libexec/cozyhat-bluecurve-session
+OnlyShowIn=XFCE;
+NoDisplay=true

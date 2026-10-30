@@ -1,18 +1,31 @@
+# Universal Blue doesn't publish an XFCE image, so use Fedora's own XFCE Atomic bootc image
+ARG BASE_IMAGE=quay.io/fedora-ostree-desktops/xfce-atomic:45
+
 # Allow build scripts to be referenced without being copied into the final image
 FROM scratch AS ctx
 COPY build_files /
 COPY system_files /system_files
 
+### BLUECURVE BUILD
+## Built on the same base image so the GTK 2 engine links against the image's own libraries.
+FROM ${BASE_IMAGE} AS bluecurve
+
+# Upstream commit to build. Bump this to pull in new upstream changes.
+ARG BLUECURVE_REF=013ba225e78d9767b274ac6f16a67cb19f0673c6
+
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
+    /ctx/build-bluecurve.sh
+
 # Base Image
-FROM ghcr.io/ublue-os/bazzite:stable
+FROM ${BASE_IMAGE}
 ## Other possible base images include:
-# FROM ghcr.io/ublue-os/bazzite:testing
+# FROM ghcr.io/ublue-os/bazzite:stable
 # FROM ghcr.io/ublue-os/aurora:stable
-# FROM ghcr.io/ublue-os/bluefin-nvidia-open:stable
-# 
+#
 # ... and so on, here are more base images
 # Universal Blue Images: https://github.com/orgs/ublue-os/packages
-# Fedora base image: quay.io/fedora/fedora-bootc:44
+# Fedora base image: quay.io/fedora/fedora-bootc:45
 # CentOS base images: quay.io/centos-bootc/centos-bootc:stream10
 
 ### [IM]MUTABLE /opt
@@ -25,6 +38,9 @@ FROM ghcr.io/ublue-os/bazzite:stable
 ## by the package manager.
 
 # RUN rm /opt && mkdir /opt
+
+# Bluecurve GTK/xfwm4 themes, icons, cursors, fonts, wallpapers
+COPY --from=bluecurve /out/ /
 
 ### MODIFICATIONS
 ## make modifications desired in your image and install packages by modifying the build.sh script
