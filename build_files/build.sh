@@ -14,6 +14,7 @@ cp -avf "/ctx/system_files"/. /
 
 # this installs a package from fedora repos
 # dnf5 install -y tmux
+dnf5 install -y falkon
 
 # Use a COPR Example:
 #
@@ -35,6 +36,23 @@ sed -i \
     -e 's|\(name="CursorThemeName" type="string" value="\)[^"]*"|\1Bluecurve"|' \
     "$xsettings"
 [[ $(grep -c 'value="Bluecurve"' "$xsettings") -eq 3 ]]
+
+### Hibernation (laptops)
+# Disk swapfile sized to RAM, created at boot on laptops only (see cozyhat-setup-swapfile).
+# Lid close on battery does suspend-then-hibernate (logind.conf.d + sleep.conf.d).
+chmod 755 /usr/libexec/cozyhat-setup-swapfile
+systemctl enable cozyhat-swapfile.service var-swap-swapfile.swap
+
+# xfce4-power-manager grabs the lid switch itself and only knows plain suspend; hand the lid
+# back to logind so the suspend-then-hibernate setting applies.
+xfpm=/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml
+sed -i 's|\(name="logind-handle-lid-switch" type="bool" value="\)false"|\1true"|' "$xfpm"
+grep -q 'name="logind-handle-lid-switch" type="bool" value="true"' "$xfpm"
+
+### SELinux off
+# The real switch is the selinux=0 kernel argument (usr/lib/bootc/kargs.d); this keeps the
+# config file consistent with it.
+sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
 
 #### Example for enabling a System Unit File
 

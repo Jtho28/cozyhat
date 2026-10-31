@@ -1,0 +1,43 @@
+#!/usr/bin/bash
+# Create a disk swapfile big enough to hibernate into. Fedora only ships zram swap, which lives in
+# RAM and can't hold a hibernation image. Runs at every boot; does nothing once the file is
+# big enough (it's recreated if RAM was upgraded). Laptops only: desktops never hibernate.
+
+set -euo pipefail
+
+# SMBIOS chassis types: 8 portable, 9 laptop, 10 notebook, 14 sub-notebook,
+# 30 tablet, 31 convertible, 32 detachable
+case "$(cat /sys/class/dmi/id/chassis_type 2>/dev/null)" in
+    8 | 9 | 10 | 14 | 30 | 31 | 32) ;;
+    *) exit 0 ;;
+esac
+
+dir=/var/swap
+file=$dir/swapfile
+
+# Size the swapfile to total RAM, rounded up to a whole GiB
+mem_kib=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)
+size_gib=$(( (mem_kib + 1048575) / 1048576 ))
+size_bytes=$(( size_gib * 1073741824 ))
+
+if [[ -f $file ]] && (( $(stat -c %s "$file") >= size_bytes )); then
+    exit 0
+fi
+
+if [[ -f $file ]]; then
+    swapoff "$file" 2>/dev/null || true
+    rm -f "$file"
+fi
+
+if [[ $(stat -f -c %T /var) == btrfs ]]; then
+    # Own subvolume so it's never caught up in snapshots; mkswapfile handles NOCOW/preallocation
+    [[ -d $dir ]] || btrfs subvolume create "$dir"
+    btrfs filesystem mkswapfile --size "${size_gib}g" "$file"
+else
+    mkdir -p "$dir"
+    fallocate -l "$size_bytes" "$file"
+    chmod 600 "$file"
+    mkswap "$file"
+fi
+
+chmod 700 "$dir"
