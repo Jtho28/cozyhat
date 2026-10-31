@@ -1,0 +1,14 @@
+[Unit]
+Description=Create hibernation swapfile (laptops only)
+DefaultDependencies=no
+RequiresMountsFor=/var
+Before=var-swap-swapfile.swap swap.target shutdown.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/cozyhat-setup-swapfile
+
+[Install]
+WantedBy=swap.target

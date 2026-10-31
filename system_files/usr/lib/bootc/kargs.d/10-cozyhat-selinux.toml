@@ -1,0 +1,2 @@
+# Disable SELinux entirely (SELINUX=disabled in /etc/selinux/config no longer does this on Fedora)
+kargs = ["selinux=0"]
