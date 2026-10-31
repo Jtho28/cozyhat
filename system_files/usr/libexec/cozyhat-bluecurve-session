@@ -1,0 +1,38 @@
+#!/usr/bin/bash
+# Per-user Bluecurve setup, run at every XFCE login.
+
+set -u
+
+# Bump to re-apply the theme settings for all users on their next login
+APPLY_VERSION=1
+
+data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
+stamp="${XDG_STATE_HOME:-$HOME/.local/state}/cozyhat/bluecurve-applied"
+
+# Flatpak apps can't see /usr/share/themes, only ~/.local/share/themes (via the global
+# override), so keep a copy of the Bluecurve GTK themes there in sync with the image.
+mkdir -p "$data_home/themes"
+for theme in /usr/share/themes/Bluecurve*; do
+    dest="$data_home/themes/$(basename "$theme")"
+    if ! diff -rq "$theme" "$dest" >/dev/null 2>&1; then
+        rm -rf "$dest"
+        cp -r "$theme" "$dest"
+    fi
+done
+
+[[ "$(cat "$stamp" 2>/dev/null)" == "$APPLY_VERSION" ]] && exit 0
+
+# New users already get these from the system defaults in /etc/xdg; this covers existing
+# users whose own xfconf settings override them.
+xfconf-query -c xsettings -p /Net/ThemeName -n -t string -s Bluecurve
+xfconf-query -c xsettings -p /Net/IconThemeName -n -t string -s Bluecurve
+xfconf-query -c xsettings -p /Gtk/CursorThemeName -n -t string -s Bluecurve
+xfconf-query -c xfwm4 -p /general/theme -n -t string -s Bluecurve
+
+# xdg-desktop-portal-gtk reports these to Flatpak apps
+gsettings set org.gnome.desktop.interface gtk-theme Bluecurve
+gsettings set org.gnome.desktop.interface icon-theme Bluecurve
+gsettings set org.gnome.desktop.interface cursor-theme Bluecurve
+
+mkdir -p "$(dirname "$stamp")"
+echo "$APPLY_VERSION" >"$stamp"
