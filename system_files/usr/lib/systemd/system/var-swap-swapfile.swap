@@ -1,0 +1,15 @@
+[Unit]
+Description=Hibernation swapfile
+After=cozyhat-swapfile.service
+Requires=cozyhat-swapfile.service
+# The setup script skips desktops, so there's no file to activate there
+ConditionPathExists=/var/swap/swapfile
+
+[Swap]
+What=/var/swap/swapfile
+# Below zram (priority 100), so day-to-day swapping still goes to zram and the disk file is
+# mostly just a place for the hibernation image.
+Priority=0
+
+[Install]
+WantedBy=swap.target
