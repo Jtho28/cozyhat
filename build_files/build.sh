@@ -49,11 +49,6 @@ xfpm=/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml
 sed -i 's|\(name="logind-handle-lid-switch" type="bool" value="\)false"|\1true"|' "$xfpm"
 grep -q 'name="logind-handle-lid-switch" type="bool" value="true"' "$xfpm"
 
-### SELinux off
-# The real switch is the selinux=0 kernel argument (usr/lib/bootc/kargs.d); this keeps the
-# config file consistent with it.
-sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
-
 #### Example for enabling a System Unit File
 
 systemctl enable podman.socket
