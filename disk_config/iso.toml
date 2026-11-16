@@ -1,0 +1,26 @@
+# Anaconda installer ISO for cozyhat (built by `just build-iso` and .github/workflows/build-disk.yml)
+
+# After install, point the system at the published image so `bootc upgrade` pulls cozyhat updates
+# instead of the local image the ISO was built from.
+[customizations.installer.kickstart]
+contents = """
+%post
+bootc switch --mutate-in-place --transport registry ghcr.io/jtho28/cozyhat:latest
+%end
+"""
+
+# XFCE has no first-boot setup wizard (unlike GNOME/KDE), so the installer itself must
+# create the user account and set the timezone/network.
+[customizations.installer.modules]
+enable = [
+  "org.fedoraproject.Anaconda.Modules.Storage",
+  "org.fedoraproject.Anaconda.Modules.Runtime",
+  "org.fedoraproject.Anaconda.Modules.Network",
+  "org.fedoraproject.Anaconda.Modules.Users",
+  "org.fedoraproject.Anaconda.Modules.Timezone"
+]
+disable = [
+  "org.fedoraproject.Anaconda.Modules.Security",
+  "org.fedoraproject.Anaconda.Modules.Services",
+  "org.fedoraproject.Anaconda.Modules.Subscription"
+]

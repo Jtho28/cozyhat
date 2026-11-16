@@ -1,5 +1,6 @@
-# Universal Blue doesn't publish an XFCE image, so use Fedora's own XFCE Atomic bootc image
-ARG BASE_IMAGE=quay.io/fedora-ostree-desktops/xfce-atomic:45
+# Universal Blue doesn't publish an XFCE image, so start from their desktop-less base (which
+# brings RPM Fusion codecs, full ffmpeg and hardware video drivers) and install XFCE in build.sh.
+ARG BASE_IMAGE=ghcr.io/ublue-os/base-main:45
 
 # Allow build scripts to be referenced without being copied into the final image
 FROM scratch AS ctx

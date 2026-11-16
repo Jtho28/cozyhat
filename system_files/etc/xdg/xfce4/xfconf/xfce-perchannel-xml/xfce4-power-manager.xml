@@ -1,12 +1,16 @@
-<?xml version="1.1" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  cozyhat system-wide defaults. This file REPLACES xfce4-power-manager's own copy, so it is
+  that file with cozyhat's choices applied (lid switch handed to logind, display sleep on AC).
+-->
 
 <channel name="xfce4-power-manager" version="1.0">
   <property name="xfce4-power-manager" type="empty">
-    <property name="power-button-action" type="empty"/>
-    <property name="sleep-button-action" type="empty"/>
-    <property name="hibernate-button-action" type="empty"/>
-    <property name="show-tray-icon" type="empty"/>
-    <property name="logind-handle-lid-switch" type="empty"/>
+    <property name="power-button-action" type="uint" value="3"/>
+    <property name="sleep-button-action" type="uint" value="3"/>
+    <property name="hibernate-button-action" type="uint" value="3"/>
+    <property name="show-tray-icon" type="bool" value="true"/>
+    <property name="logind-handle-lid-switch" type="bool" value="true"/>
     <property name="dpms-on-ac-sleep" type="uint" value="10"/>
   </property>
 </channel>
